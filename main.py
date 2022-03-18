@@ -1,6 +1,6 @@
-from this import d
 import torch
 from torchvision.models import resnet18, resnet34, resnet50
+import torchvision.transforms as transforms
 from datasets import ImagenetCScore
 from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
@@ -17,8 +17,23 @@ torch.manual_seed(seed)
 dataset = "imagenet"
 img_root = "/mnt/nas2/GrimaRepo/datasets/ILSVRC2012/train/"
 data = {'imagenet': ImagenetCScore}
-train_data = data[dataset](transform=ToTensor(), img_root=img_root, train=True)
-test_data = data[dataset](transform=ToTensor(), download=True, train=True)
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+preprocessing_tr = transforms.Compose([
+    transforms.RandomSizedCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    normalize,
+])
+
+preprocessing_ts = transforms.Compose([
+    transforms.Scale(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    normalize,
+])
+train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
+test_data = data[dataset](transform=preprocessing_ts, train=True)
 arch = "resnet50"
 
 def train(model, loader, opt, device, criterion):
@@ -67,7 +82,7 @@ models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50}
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = "sgd"  # "sgd", "adam"
-device = 'cuda'
+device = 'cpu'
 criterion = CrossEntropyLoss()
 lr = 0.01
 
@@ -80,5 +95,6 @@ n_epochs = 10
 train_dl = DataLoader(train_data, batch_size=128)
 test_dl = DataLoader(test_data, batch_size=512)
 
-data = torch.randn((10,3,224,224)).float()
-print(model(data).shape)
+batch = next(iter(train_dl))
+
+print(batch)
