@@ -5,8 +5,8 @@ from datasets import ImagenetCScore
 from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
-from torch.nn import CrossEntropyLoss, MSELoss
-from torchvision.transforms import ToTensor
+from torch.nn import  MSELoss
+from utils import timing
 import numpy as np
 import torch.nn as nn
 seed = 123
@@ -36,6 +36,7 @@ train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=
 test_data = data[dataset](transform=preprocessing_ts, train=True)
 arch = "resnet50"
 
+@timing
 def train(model, loader, opt, device, criterion):
     loss_meter = AverageMeter()
     model.train()
@@ -56,7 +57,7 @@ def train(model, loader, opt, device, criterion):
 
     return model, [loss_meter]
 
-
+@timing
 def test(model, loader, device, criterion):
     loss_meter = AverageMeter()
     total_batches = len(loader)
@@ -95,7 +96,6 @@ n_epochs = 10
 train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)
 
-batch = next(iter(train_dl))
 model.to(device)
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}")
