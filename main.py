@@ -20,14 +20,14 @@ data = {'imagenet': ImagenetCScore}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 preprocessing_tr = transforms.Compose([
-    transforms.RandomSizedCrop(224),
+    transforms.RandomResizedCrop(224),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     normalize,
 ])
 
 preprocessing_ts = transforms.Compose([
-    transforms.Scale(256),
+    transforms.Resize(256),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
     normalize,
@@ -82,9 +82,9 @@ models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50}
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = "sgd"  # "sgd", "adam"
-device = 'cpu'
-criterion = CrossEntropyLoss()
-lr = 0.01
+device = 'cuda'
+criterion = MSELoss()
+lr = 0.001
 
 model = models[arch]()
 # change last layer for regression
@@ -92,9 +92,15 @@ model.fc = nn.Linear(in_features[arch],1)
 
 opt = optimizers[optimizer](model.parameters(), lr=lr, momentum=0.9)
 n_epochs = 10
-train_dl = DataLoader(train_data, batch_size=128)
+train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)
 
 batch = next(iter(train_dl))
-
-print(batch)
+model.to(device)
+for epoch in range(1, n_epochs + 1):
+    print(f"\nTrain Epoch {epoch}")
+    model, stats = train(model, train_dl, opt, device, criterion)
+    checkpoint(model, stats, epoch, arch, dataset, split="train")
+    print(f"\nTest Epoch {epoch}")
+    model, stats = test(model, test_dl, device, criterion)
+    checkpoint(model, stats, epoch, arch, dataset, split="test")

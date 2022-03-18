@@ -31,7 +31,10 @@ class ImagenetCScore(nn.Dataset):
     def __getitem__(self, index):
         img = self.files[index]
         img = Image.open(join(self.img_root,img)) # open img in img folder
-
+        if img.mode == "L":
+            rgbimg = Image.new("RGB", img.size)
+            rgbimg.paste(img)
+            img = rgbimg
         if self.transform is not None:
             img = self.transform(img)
 
