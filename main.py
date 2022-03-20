@@ -15,7 +15,7 @@ torch.manual_seed(seed)
 # dataset "MNIST", "CIFAR10"
 
 dataset = "imagenet"
-img_root = "/mnt/nas2/GrimaRepo/datasets/ILSVRC2012/train/"
+img_root = "/workspace1/araymond/ILSVRC2012/train/"
 data = {'imagenet': ImagenetCScore}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
