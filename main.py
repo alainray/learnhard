@@ -34,7 +34,7 @@ preprocessing_ts = transforms.Compose([
 ])
 train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
 test_data = data[dataset](transform=preprocessing_ts, train=True)
-arch = "resnet50"
+arch = "resnet18"
 
 @timing
 def train(model, loader, opt, device, criterion):
@@ -43,8 +43,12 @@ def train(model, loader, opt, device, criterion):
     total_batches = len(loader)
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
-        x = x.to(device)
-        label = label.to(device)
+        if n_gpus > 1:
+            x = x.to(0)
+            label = label.to(0)
+        else:
+            x = x.to(device)
+            label = label.to(device)
         logits = model(x)
         bs = x.shape[0]
         loss = criterion(logits, label)
@@ -76,6 +80,8 @@ def test(model, loader, device, criterion):
 
     return model, [loss_meter]
 
+
+
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3}
 n_classes = {'imagenet': 1} # regression task
@@ -97,12 +103,19 @@ if pretrained:
 # change last layer for regression between 0 and 1
 model.fc = nn.Sequential(nn.Linear(in_features[arch],1), nn.Sigmoid())
 
+n_gpus = 1
+if n_gpus > 1:
+    model = nn.DataParallel(model, list(range(n_gpus)))
+
 opt = optimizers[optimizer](model.parameters(), lr=lr, momentum=0.9)
 n_epochs = 100
 train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)
 
-model.to(device)
+if n_gpus > 1:
+    model.to(0)
+else:    
+    model.to(device)
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}", flush=True)
     model, stats = train(model, train_dl, opt, device, criterion)
