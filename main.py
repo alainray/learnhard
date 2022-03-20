@@ -33,7 +33,7 @@ preprocessing_ts = transforms.Compose([
     normalize,
 ])
 train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
-test_data = data[dataset](transform=preprocessing_ts, train=True)
+test_data = data[dataset](transform=preprocessing_ts, train=False)
 arch = "resnet18"
 
 @timing
