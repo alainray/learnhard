@@ -86,21 +86,27 @@ optimizer = "sgd"  # "sgd", "adam"
 device = 'cuda'
 criterion = MSELoss()
 lr = 0.001
+pretrained = True
+model = models[arch](pretrained=pretrained)
 
-model = models[arch]()
-# change last layer for regression
-model.fc = nn.Linear(in_features[arch],1)
+if pretrained:
+    # Freeze layers!
+    for param in model.parameters():
+        param.requires_grad = False
+
+# change last layer for regression between 0 and 1
+model.fc = nn.Sequential(nn.Linear(in_features[arch],1), nn.Sigmoid())
 
 opt = optimizers[optimizer](model.parameters(), lr=lr, momentum=0.9)
-n_epochs = 10
+n_epochs = 100
 train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)
 
 model.to(device)
 for epoch in range(1, n_epochs + 1):
-    print(f"\nTrain Epoch {epoch}")
+    print(f"\nTrain Epoch {epoch}", flush=True)
     model, stats = train(model, train_dl, opt, device, criterion)
     checkpoint(model, stats, epoch, arch, dataset, split="train")
-    print(f"\nTest Epoch {epoch}")
+    print(f"\nTest Epoch {epoch}", flush=True)
     model, stats = test(model, test_dl, device, criterion)
     checkpoint(model, stats, epoch, arch, dataset, split="test")
