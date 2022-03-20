@@ -53,7 +53,7 @@ def train(model, loader, opt, device, criterion):
         loss_meter.update(loss.cpu(), bs)
         opt.step()
 
-        print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="")
+        print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
 
     return model, [loss_meter]
 
@@ -72,7 +72,7 @@ def test(model, loader, device, criterion):
             # Update stats
             loss_meter.update(loss.cpu(), bs)
 
-            print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="")
+            print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
 
     return model, [loss_meter]
 
