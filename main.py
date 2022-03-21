@@ -30,10 +30,11 @@ preprocessing_tr = transforms.Compose([
 preprocessing_ts = transforms.Compose([
     transforms.Resize(72),
     transforms.CenterCrop(64),
+    transforms.ToTensor(),
     normalize,
 ])
 train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
-test_data = data[dataset](transform=preprocessing_ts, train=False)
+test_data = data[dataset](transform=preprocessing_ts, img_root=img_root, train=False)
 arch = "resnet18"
 
 @timing
