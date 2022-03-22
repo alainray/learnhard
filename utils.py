@@ -36,13 +36,13 @@ def create_splits(f, s, l, root="c_score/imagenet"):
         for name in v.keys():
             np.save(join(root,f"{name}_{split}.npy"), d[split][name])
 
-def checkpoint(model, stats, epoch, arch, dataset, root="ckpts", res_root="stats", split="train"):
+def checkpoint(args, model, stats, epoch, root="ckpts", res_root="stats", split="train"):
     if not os.path.isdir(root):
         mkdir(root)
-    torch.save(model.state_dict, f"{root}/{arch}_{dataset}_{split}_{epoch}.pth")
+    torch.save(model.state_dict, f"{root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
     if not os.path.isdir(res_root):
         mkdir(res_root)
-    torch.save(stats, f"{res_root}/{arch}_{dataset}_{split}_{epoch}.pth")
+    torch.save(stats, f"{res_root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

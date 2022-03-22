@@ -9,12 +9,26 @@ from torch.nn import  MSELoss
 from utils import timing
 import numpy as np
 import torch.nn as nn
-seed = 123
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("arch")                     # Architecture: fc, minialex
+parser.add_argument("lr", type=float)
+parser.add_argument("--dataset", default="imagenet") 
+parser.add_argument("--seed", type=int, default=123)                     # Random seed (an int)
+parser.add_argument("--epochs", type=int, default=100)
+args = parser.parse_args()
+seed = args.seed
+seed = args.seed
+arch = args.arch
+lr = args.lr
+n_epochs = args.epochs
 torch.manual_seed(seed)
 
 # dataset "MNIST", "CIFAR10"
 
-dataset = "imagenet"
+dataset = args.dataset
 img_root = "/workspace1/araymond/ILSVRC2012/train/"
 data = {'imagenet': ImagenetCScore}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -35,7 +49,7 @@ preprocessing_ts = transforms.Compose([
 ])
 train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
 test_data = data[dataset](transform=preprocessing_ts, img_root=img_root, train=False)
-arch = "resnet18"
+
 
 @timing
 def train(model, loader, opt, device, criterion):
@@ -92,7 +106,8 @@ input_dims = {'imagenet': 224*224*3}
 optimizer = "sgd"  # "sgd", "adam"
 device = 'cuda'
 criterion = MSELoss()
-lr = 0.001
+
+
 pretrained = True
 model = models[arch](pretrained=pretrained)
 
@@ -102,14 +117,18 @@ if pretrained:
         param.requires_grad = False
 
 # change last layer for regression between 0 and 1
-model.fc = nn.Sequential(nn.Linear(in_features[arch],1), nn.Sigmoid())
+# model.fc = nn.Sequential(nn.Linear(in_features[arch],1), nn.Sigmoid())
+model.fc = nn.Linear(in_features[arch],1)
+model.fc.bias.requires_grad = False
+model.fc.bias.fill_(0.5)
+model.fc.bias.requires_grad = True
 
 n_gpus = 1
 if n_gpus > 1:
     model = nn.DataParallel(model, list(range(n_gpus)))
 
 opt = optimizers[optimizer](model.parameters(), lr=lr, momentum=0.9)
-n_epochs = 100
+
 train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)
 
@@ -120,7 +139,7 @@ else:
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}", flush=True)
     model, stats = train(model, train_dl, opt, device, criterion)
-    checkpoint(model, stats, epoch, arch, dataset, split="train")
+    checkpoint(args, model, stats, epoch, split="train")
     print(f"\nTest Epoch {epoch}", flush=True)
     model, stats = test(model, test_dl, device, criterion)
-    checkpoint(model, stats, epoch, arch, dataset, split="test")
+    checkpoint(args, model, stats, epoch, split="test")
