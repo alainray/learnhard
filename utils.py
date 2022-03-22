@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from functools import wraps
 from time import time
 
+
 def timing(f):
     @wraps(f)
     def wrap(*args, **kw):
@@ -17,6 +18,47 @@ def timing(f):
         print(f"Func: {f.__name__} took: {te-ts:0.0f} sec")
         return result
     return wrap
+
+@timing
+def train(model, loader, opt, device, criterion):
+    loss_meter = AverageMeter()
+    model.train()
+    total_batches = len(loader)
+    for n_batch, (index, x, label) in enumerate(loader):
+        opt.zero_grad()
+        x = x.to(device)
+        label = label.to(device)
+        logits = model(x)
+        bs = x.shape[0]
+        loss = criterion(logits, label)
+        loss.backward()
+        # Update stats
+        loss_meter.update(loss.cpu(), bs)
+        opt.step()
+
+        print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
+
+    return model, [loss_meter]
+
+@timing
+def test(model, loader, device, criterion):
+    loss_meter = AverageMeter()
+    total_batches = len(loader)
+    model.eval()
+    with torch.no_grad():
+        for n_batch, (index, x, label) in enumerate(loader):
+            x = x.to(device)
+            label = label.to(device)
+            logits = model(x)
+            bs = x.shape[0]
+            loss = criterion(logits, label)
+            # Update stats
+            loss_meter.update(loss.cpu(), bs)
+
+            print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
+
+    return model, [loss_meter]
+
 
 def create_splits(f, s, l, root="c_score/imagenet"):
     d= {'train': {'filenames': None, 'scores': None, 'labels': None},
@@ -37,9 +79,11 @@ def create_splits(f, s, l, root="c_score/imagenet"):
             np.save(join(root,f"{name}_{split}.npy"), d[split][name])
 
 def checkpoint(args, model, stats, epoch, root="ckpts", res_root="stats", split="train"):
-    if not os.path.isdir(root):
-        mkdir(root)
-    torch.save(model.state_dict, f"{root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
+    if split == "train":
+        if not os.path.isdir(root):
+            mkdir(root)
+        torch.save(model.state_dict(), f"{root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
+        
     if not os.path.isdir(res_root):
         mkdir(res_root)
     torch.save(stats, f"{res_root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")

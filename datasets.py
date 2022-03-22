@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, Tuple
 import torch.utils.data as nn
 from os.path import join
 from PIL import Image
 import numpy as np
+from torchvision.datasets import CIFAR10, CIFAR100
 
 def make_path(path):
     folder = path.split("_")[0]
@@ -40,3 +41,24 @@ class ImagenetCScore(nn.Dataset):
 
         score = self.scores[index]
         return index, img, score
+
+# CIFAR10
+
+def CIFARIdx(cl):
+    class DatasetCIFARIdx(cl):
+        def __getitem__(self, index: int) -> Tuple[Any, Any]:
+            img, target = self.data[index], self.targets[index]
+
+            # doing this so that it is consistent with all other datasets
+            # to return a PIL Image
+            img = Image.fromarray(img)
+
+            if self.transform is not None:
+                img = self.transform(img)
+
+            if self.target_transform is not None:
+                target = self.target_transform(target)
+
+            return index, img, target
+
+    return DatasetCIFARIdx

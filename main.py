@@ -6,7 +6,7 @@ from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
 from torch.nn import  MSELoss
-from utils import timing
+from utils import train, test
 import numpy as np
 import torch.nn as nn
 import argparse
@@ -51,49 +51,6 @@ train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=
 test_data = data[dataset](transform=preprocessing_ts, img_root=img_root, train=False)
 
 
-@timing
-def train(model, loader, opt, device, criterion):
-    loss_meter = AverageMeter()
-    model.train()
-    total_batches = len(loader)
-    for n_batch, (index, x, label) in enumerate(loader):
-        opt.zero_grad()
-        if n_gpus > 1:
-            x = x.to(0)
-            label = label.to(0)
-        else:
-            x = x.to(device)
-            label = label.to(device)
-        logits = model(x)
-        bs = x.shape[0]
-        loss = criterion(logits, label)
-        loss.backward()
-        # Update stats
-        loss_meter.update(loss.cpu(), bs)
-        opt.step()
-
-        print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
-
-    return model, [loss_meter]
-
-@timing
-def test(model, loader, device, criterion):
-    loss_meter = AverageMeter()
-    total_batches = len(loader)
-    model.eval()
-    with torch.no_grad():
-        for n_batch, (index, x, label) in enumerate(loader):
-            x = x.to(device)
-            label = label.to(device)
-            logits = model(x)
-            bs = x.shape[0]
-            loss = criterion(logits, label)
-            # Update stats
-            loss_meter.update(loss.cpu(), bs)
-
-            print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
-
-    return model, [loss_meter]
 
 
 
