@@ -1,7 +1,8 @@
 import torch
 from torchvision.models import resnet18, resnet34, resnet50
+from torchvision.datasets import CIFAR10, CIFAR100
 import torchvision.transforms as transforms
-from datasets import ImagenetCScore
+from datasets import ImagenetCScore, CIFARIdx
 from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
@@ -30,7 +31,7 @@ torch.manual_seed(seed)
 
 dataset = args.dataset
 img_root = "/workspace1/araymond/ILSVRC2012/train/"
-data = {'imagenet': ImagenetCScore}
+data = {'imagenet': ImagenetCScore, "cifar10": CIFARIdx(CIFAR10), "cifar100": CIFARIdx(CIFAR100)}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 preprocessing_tr = transforms.Compose([
@@ -50,13 +51,9 @@ preprocessing_ts = transforms.Compose([
 train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
 test_data = data[dataset](transform=preprocessing_ts, img_root=img_root, train=False)
 
-
-
-
-
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
-in_channels = {'imagenet': 3}
-n_classes = {'imagenet': 1} # regression task
+in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
+n_classes = {'imagenet': 1, 'cifar10': 1, 'cifar100': 1} # regression task
 models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50} 
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
@@ -84,7 +81,7 @@ n_gpus = 1
 if n_gpus > 1:
     model = nn.DataParallel(model, list(range(n_gpus)))
 
-opt = optimizers[optimizer](model.parameters(), lr=lr, momentum=0.9)
+opt = optimizers[optimizer](filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9)
 
 train_dl = DataLoader(train_data, batch_size=256)
 test_dl = DataLoader(test_data, batch_size=512)

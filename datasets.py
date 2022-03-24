@@ -45,6 +45,9 @@ class ImagenetCScore(nn.Dataset):
 # CIFAR10
 
 def CIFARIdx(cl):
+    dataset = "cifar10" if CIFAR10 else "cifar100"
+    scores = np.load(f"c_score/{dataset}/scores.npy")
+
     class DatasetCIFARIdx(cl):
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
@@ -59,6 +62,6 @@ def CIFARIdx(cl):
             if self.target_transform is not None:
                 target = self.target_transform(target)
 
-            return index, img, target
+            return index, img, scores[index]
 
     return DatasetCIFARIdx
