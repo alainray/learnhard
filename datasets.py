@@ -10,9 +10,9 @@ def make_path(path):
     return join(folder, path)
 
 class ImagenetCScore(nn.Dataset):
-    def __init__(self, root: str="c_score/imagenet", 
+    def __init__(self, root: str=".", 
                        train = True,
-                       img_root=".",
+                       img_root="c_score/imagenet",
                        transform=None,
                         **kwargs: Any):
         super(ImagenetCScore, self).__init__()
@@ -21,17 +21,17 @@ class ImagenetCScore(nn.Dataset):
         split = "train" if train else "test"
         self.transform = transform
         self.files = np.load(join(root,f"filenames_{split}.npy"), allow_pickle=True)
-        self.img_root = img_root
+        self.root = root
         
         for i in range(len(self.files)):
             self.files[i] = make_path(str(self.files[i]).replace("b'","")[:-1])
-        self.scores = np.load(join(root,f"scores_{split}.npy"))
+        self.scores = np.load(join(img_root,f"scores_{split}.npy"))
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, index):
         img = self.files[index]
-        img = Image.open(join(self.img_root,img)) # open img in img folder
+        img = Image.open(join(self.root,img)) # open img in img folder
         if img.mode != "RGB":
             rgbimg = Image.new("RGB", img.size)
             rgbimg.paste(img)
@@ -47,6 +47,7 @@ class ImagenetCScore(nn.Dataset):
 def CIFARIdx(cl):
     dataset = "cifar10" if CIFAR10 else "cifar100"
     scores = np.load(f"c_score/{dataset}/scores.npy")
+
 
     class DatasetCIFARIdx(cl):
         def __getitem__(self, index: int) -> Tuple[Any, Any]:

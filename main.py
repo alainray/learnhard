@@ -30,7 +30,10 @@ torch.manual_seed(seed)
 # dataset "MNIST", "CIFAR10"
 
 dataset = args.dataset
-img_root = "/workspace1/araymond/ILSVRC2012/train/"
+if dataset == "imagenet":
+    root = "/workspace1/araymond/ILSVRC2012/train/"
+else:
+    root = "."
 data = {'imagenet': ImagenetCScore, "cifar10": CIFARIdx(CIFAR10), "cifar100": CIFARIdx(CIFAR100)}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
@@ -48,8 +51,8 @@ preprocessing_ts = transforms.Compose([
     transforms.ToTensor(),
     normalize,
 ])
-train_data = data[dataset](transform=preprocessing_tr, img_root=img_root, train=True)
-test_data = data[dataset](transform=preprocessing_ts, img_root=img_root, train=False)
+train_data = data[dataset](transform=preprocessing_tr, root=root, train=True, download=True)
+test_data = data[dataset](transform=preprocessing_ts, root=root, train=False, download=True)
 
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
