@@ -66,9 +66,10 @@ criterion = MSELoss()
 
 
 pretrained = True
+freeze = False
 model = models[arch](pretrained=pretrained)
 
-if pretrained:
+if freeze:
     # Freeze layers!
     for param in model.parameters():
         param.requires_grad = False

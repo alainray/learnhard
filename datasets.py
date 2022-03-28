@@ -45,9 +45,8 @@ class ImagenetCScore(nn.Dataset):
 # CIFAR10
 
 def CIFARIdx(cl):
-    dataset = "cifar10" if CIFAR10 else "cifar100"
+    dataset = "cifar10" if cl == CIFAR10 else "cifar100"
     scores = np.load(f"c_score/{dataset}/scores.npy")
-
 
     class DatasetCIFARIdx(cl):
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
