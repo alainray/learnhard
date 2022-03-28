@@ -87,7 +87,7 @@ if n_gpus > 1:
 
 opt = optimizers[optimizer](filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9)
 
-train_dl = DataLoader(train_data, batch_size=256)
+train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
 test_dl = DataLoader(test_data, batch_size=512)
 
 if n_gpus > 1:
