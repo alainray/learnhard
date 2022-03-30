@@ -65,7 +65,7 @@ def CIFARIdx(cl, label_type="score"):
 
             if self.target_transform is not None:
                 target = self.target_transform(target)
-            label = scores[index] if label_type=="score" else (digitize(scores[index],bins) - 1).astype(np.longlong)
+            label = scores[index].astype(np.float) if label_type=="score" else (digitize(scores[index],bins) - 1).astype(np.longlong)
             return index, img, label
 
     return DatasetCIFARIdx
