@@ -22,24 +22,32 @@ def timing(f):
 @timing
 def train(args, model, loader, opt, device, criterion):
     loss_meter = AverageMeter()
+    acc_meter = AverageMeter()
     model.train()
+    acc_data = ""
     total_batches = len(loader)
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
         x = x.to(device)
 
         label = label.to(device)
+
+        logits = model(x)
         if args.label_type == "score":
             label = label.float().unsqueeze(1)
-        logits = model(x)
+        else:
+            preds = logits.argmax(dim=1)
+            correct = (preds == label).cpu().sum()
+            acc_meter.update(correct.cpu() / float(bs), bs)
+            acc_data = f"Acc: {100 * correct.float() / bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
         bs = x.shape[0]
         loss = criterion(logits, label)
         loss.backward()
         # Update stats
         loss_meter.update(loss.cpu(), bs)
         opt.step()
-
-        print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
+        loss_data = " Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}"
+        print(f"\r{n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
 
     return model, [loss_meter]
 
