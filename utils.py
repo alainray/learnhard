@@ -46,10 +46,10 @@ def train(args, model, loader, opt, device, criterion):
         # Update stats
         loss_meter.update(loss.cpu(), bs)
         opt.step()
-        loss_data = " Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}"
+        loss_data = f" Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}"
         print(f"\r{n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
 
-    return model, [loss_meter]
+    return model, [loss_meter, acc_meter]
 
 @timing
 def test(args, model, loader, device, criterion):
