@@ -28,6 +28,7 @@ def train(model, loader, opt, device, criterion):
         opt.zero_grad()
         x = x.to(device)
         label = label.to(device)
+        print(label.shape, x.shape)
         logits = model(x)
         bs = x.shape[0]
         loss = criterion(logits, label)
