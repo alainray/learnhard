@@ -22,6 +22,7 @@ def timing(f):
 @timing
 def train(model, loader, opt, device, criterion):
     loss_meter = AverageMeter()
+    print(type(criterion))
     model.train()
     total_batches = len(loader)
     for n_batch, (index, x, label) in enumerate(loader):
