@@ -61,7 +61,7 @@ test_data = data[dataset](transform=preprocessing_ts, root=root, train=False, do
 
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
-n_classes = {'imagenet': 1, 'cifar10': 1, 'cifar100': 1} # regression task
+n_classes = {'imagenet': 1, 'cifar10': 10, 'cifar100': 100} # regression task
 models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50} 
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
@@ -80,10 +80,13 @@ if freeze:
 
 # change last layer for regression between 0 and 1
 # model.fc = nn.Sequential(nn.Linear(in_features[arch],1), nn.Sigmoid())
-model.fc = nn.Linear(in_features[arch],1)
-model.fc.bias.requires_grad = False
+if label_type == "score":
+    model.fc = nn.Linear(in_features[arch],1)
+else:
+    model.fc = nn.Linear(in_features[arch],n_classes[dataset])
+'''model.fc.bias.requires_grad = False
 model.fc.bias.fill_(0.5)
-model.fc.bias.requires_grad = True
+model.fc.bias.requires_grad = True'''
 
 n_gpus = 1
 if n_gpus > 1:
