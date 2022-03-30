@@ -30,7 +30,7 @@ def train(args, model, loader, opt, device, criterion):
 
         label = label.to(device)
         if args.label_type == "score":
-            label = label.float()
+            label = label.float().unsqueeze(1)
         logits = model(x)
         bs = x.shape[0]
         loss = criterion(logits, label)
