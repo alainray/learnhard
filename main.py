@@ -61,7 +61,7 @@ test_data = data[dataset](transform=preprocessing_ts, root=root, train=False, do
 
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
-n_classes = {'imagenet': 1, 'cifar10': 10, 'cifar100': 100} # regression task
+n_classes = {'imagenet': 10, 'cifar10': 10, 'cifar100': 10} # regression task
 models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50} 
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
