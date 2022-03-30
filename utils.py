@@ -44,7 +44,7 @@ def train(args, model, loader, opt, device, criterion):
     return model, [loss_meter]
 
 @timing
-def test(model, loader, device, criterion):
+def test(args, model, loader, device, criterion):
     loss_meter = AverageMeter()
     total_batches = len(loader)
     model.eval()

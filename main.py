@@ -103,8 +103,8 @@ else:
     model.to(device)
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}", flush=True)
-    model, stats = train(model, train_dl, opt, device, criterion)
+    model, stats = train(args, model, train_dl, opt, device, criterion)
     checkpoint(args, model, stats, epoch, split="train")
     # print(f"\nTest Epoch {epoch}", flush=True)
-    # model, stats = test(model, test_dl, device, criterion)
+    # model, stats = test(args, model, test_dl, device, criterion)
     #checkpoint(args, model, stats, epoch, split="test")
