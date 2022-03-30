@@ -20,15 +20,17 @@ def timing(f):
     return wrap
 
 @timing
-def train(model, loader, opt, device, criterion):
+def train(args, model, loader, opt, device, criterion):
     loss_meter = AverageMeter()
-    print(type(criterion))
     model.train()
     total_batches = len(loader)
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
         x = x.to(device)
+
         label = label.to(device)
+        if args.label_type == "score":
+            label = label.float()
         logits = model(x)
         bs = x.shape[0]
         loss = criterion(logits, label)
