@@ -82,11 +82,11 @@ def checkpoint(args, model, stats, epoch, root="ckpts", res_root="stats", split=
     if split == "train":
         if not os.path.isdir(root):
             mkdir(root)
-        torch.save(model.state_dict(), f"{root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
+        torch.save(model.state_dict(), f"{root}/{args.arch}_{args.dataset}_{args.lr}_{args.label_type}_{split}_{epoch}_{args.seed}.pth")
         
     if not os.path.isdir(res_root):
         mkdir(res_root)
-    torch.save(stats, f"{res_root}/{args.arch}_{args.dataset}_{args.lr}_{split}_{epoch}_{args.seed}.pth")
+    torch.save(stats, f"{res_root}/{args.arch}_{args.dataset}_{args.lr}_{args.label_type}_{split}_{epoch}_{args.seed}.pth")
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
