@@ -1,3 +1,4 @@
+from cProfile import label
 import torch
 from torchvision.models import resnet18, resnet34, resnet50
 from torchvision.datasets import CIFAR10, CIFAR100
@@ -6,7 +7,7 @@ from datasets import ImagenetCScore, CIFARIdx
 from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
-from torch.nn import  MSELoss
+from torch.nn import  MSELoss, CrossEntropyLoss
 from utils import train, test
 import numpy as np
 import torch.nn as nn
@@ -19,12 +20,14 @@ parser.add_argument("lr", type=float)
 parser.add_argument("--dataset", default="imagenet") 
 parser.add_argument("--seed", type=int, default=123)                     # Random seed (an int)
 parser.add_argument("--epochs", type=int, default=100)
+parser.add_argument("--label_type", type=str, default="score")
 args = parser.parse_args()
 seed = args.seed
 seed = args.seed
 arch = args.arch
 lr = args.lr
 n_epochs = args.epochs
+label_type = args.label_type
 torch.manual_seed(seed)
 
 # dataset "MNIST", "CIFAR10"
@@ -34,7 +37,9 @@ if dataset == "imagenet":
     root = "/workspace1/araymond/ILSVRC2012/train/"
 else:
     root = "."
-data = {'imagenet': ImagenetCScore, "cifar10": CIFARIdx(CIFAR10), "cifar100": CIFARIdx(CIFAR100)}
+data = {"imagenet": ImagenetCScore,
+         "cifar10": CIFARIdx(CIFAR10,label_type=label_type),
+        "cifar100": CIFARIdx(CIFAR100, label_type=label_type)}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 preprocessing_tr = transforms.Compose([
@@ -62,8 +67,7 @@ optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = "sgd"  # "sgd", "adam"
 device = 'cuda'
-criterion = MSELoss()
-
+criterion = MSELoss() if label_type == "score" else CrossEntropyLoss()
 
 pretrained = True
 freeze = False

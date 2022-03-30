@@ -4,6 +4,7 @@ from os.path import join
 from PIL import Image
 import numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
+from numpy import digitize, histogram_bin_edges
 
 def make_path(path):
     folder = path.split("_")[0]
@@ -44,10 +45,13 @@ class ImagenetCScore(nn.Dataset):
 
 # CIFAR10
 
-def CIFARIdx(cl):
+def CIFARIdx(cl, label_type="score"):
     dataset = "cifar10" if cl == CIFAR10 else "cifar100"
     scores = np.load(f"c_score/{dataset}/scores.npy")
-
+    bins = histogram_bin_edges(scores, 10)
+    delta = 0.00001
+    bins[0] -= delta
+    bins[-1] += delta
     class DatasetCIFARIdx(cl):
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
@@ -61,7 +65,7 @@ def CIFARIdx(cl):
 
             if self.target_transform is not None:
                 target = self.target_transform(target)
-
-            return index, img, scores[index]
+            label = scores[index] if label_type=="score" else digitize(scores[index],bins) - 1
+            return index, img, label, scores[index]
 
     return DatasetCIFARIdx
