@@ -29,7 +29,7 @@ def train(args, model, loader, opt, device, criterion):
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
         x = x.to(device)
-
+        bs = x.shape[0]
         label = label.to(device)
 
         logits = model(x)
@@ -40,7 +40,7 @@ def train(args, model, loader, opt, device, criterion):
             correct = (preds == label).cpu().sum()
             acc_meter.update(correct.cpu() / float(bs), bs)
             acc_data = f"Acc: {100 * correct.float() / bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
-        bs = x.shape[0]
+
         loss = criterion(logits, label)
         loss.backward()
         # Update stats
