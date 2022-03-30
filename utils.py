@@ -27,7 +27,7 @@ def train(model, loader, opt, device, criterion):
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
         x = x.to(device)
-        label = label.to(device)
+        label = label.to(device).unsqueeze(1)
         print(label.shape, x.shape)
         logits = model(x)
         bs = x.shape[0]
