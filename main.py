@@ -1,4 +1,4 @@
-from cProfile import label
+import comet_ml
 import torch
 from torchvision.models import resnet18, resnet34, resnet50
 from torchvision.datasets import CIFAR10, CIFAR100
@@ -8,7 +8,7 @@ from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
 from torch.nn import  MSELoss, CrossEntropyLoss
-from utils import train, test
+from utils import train, test, setup_comet
 import numpy as np
 import torch.nn as nn
 import argparse
@@ -24,6 +24,9 @@ parser.add_argument("--label_type", type=str, default="score") # score/bins
 parser.add_argument("--bin_type", type=str, default="equal") # constant/equal
 parser.add_argument("--n_bins", type=int, default=10)
 parser.add_argument("--opt", type=str, default="sgd")
+parser.add_argument("--cometKey", type=str)
+parser.add_argument("--cometWs", type=str)
+parser.add_argument("--cometName", type=str)
 args = parser.parse_args()
 seed = args.seed
 seed = args.seed
@@ -102,10 +105,15 @@ test_dl = DataLoader(test_data, batch_size=512)
 
 
 model.to(device)
+
+exp = setup_comet({k:w for k,w in args.items() if "comet" not in k})
+exp.log_parameters(args)
+model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
+
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}", flush=True)
-    model, stats = train(args, model, train_dl, opt, device, criterion)
-    checkpoint(args, model, stats, epoch, split="train")
+    model, stats = train(args, model, train_dl, opt, device, criterion, epoch)
+    checkpoint(exp, args, model, stats, epoch, split="train")
     # print(f"\nTest Epoch {epoch}", flush=True)
     # model, stats = test(args, model, test_dl, device, criterion)
     #checkpoint(args, model, stats, epoch, split="test")
