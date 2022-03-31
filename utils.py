@@ -53,7 +53,7 @@ def timing(f):
         return result
     return wrap
 
-#@timing
+@timing
 def train(experiment, args, model, loader, opt, device, criterion, epoch):
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -80,7 +80,7 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
         loss.backward()
         # Update stats
         opt.step()
-        cur_loss = loss.cpu()
+        cur_loss = loss.detach().cpu()
         metrics['loss'] = cur_loss
         loss_meter.update(loss_meter.avg, bs)
         loss_data = f" Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}"
