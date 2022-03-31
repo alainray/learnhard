@@ -106,7 +106,7 @@ test_dl = DataLoader(test_data, batch_size=512)
 
 model.to(device)
 
-exp = setup_comet({k:w for k,w in args.items() if "comet" not in k})
+exp = setup_comet({k:w for k,w in vars(args).items() if "comet" not in k})
 exp.log_parameters(args)
 model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
 

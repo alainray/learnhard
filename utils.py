@@ -131,7 +131,7 @@ def create_splits(f, s, l, root="c_score/imagenet"):
 
 def checkpoint(args, model, stats, epoch, root="ckpts", res_root="stats", split="train"):
     
-    prefix = "_".join([w for k,w in args.items() if "comet" not in k])
+    prefix = "_".join([w for k,w in vars(args).items() if "comet" not in k])
     
     if split == "train":
         if not os.path.isdir(root):
