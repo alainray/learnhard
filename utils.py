@@ -82,8 +82,8 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
         opt.step()
         cur_loss = loss.detach().cpu()
         metrics['loss'] = cur_loss
-        loss_meter.update(loss_meter.avg, bs)
-        loss_data = f" Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}"
+        loss_meter.update(cur_loss, bs)
+        loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
         training_iteration = total_batches*(epoch-1) + n_batch + 1
         experiment.log_metrics(metrics, prefix='train', step=training_iteration, epoch=epoch)
 
