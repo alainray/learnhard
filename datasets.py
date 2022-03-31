@@ -45,10 +45,13 @@ class ImagenetCScore(nn.Dataset):
 
 # CIFAR10
 
-def CIFARIdx(cl, label_type="score"):
+def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
     dataset = "cifar10" if cl == CIFAR10 else "cifar100"
     scores = np.load(f"c_score/{dataset}/scores.npy")
-    bins = histogram_bin_edges(scores, 10)
+    if bin_type == "constant":
+        bins = np.linspace(0,1,n_bins+1)
+    else:
+        bins = histogram_bin_edges(scores, 10)
     delta = 0.00001
     bins[0] -= delta
     bins[-1] += delta

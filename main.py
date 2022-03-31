@@ -20,7 +20,10 @@ parser.add_argument("lr", type=float)
 parser.add_argument("--dataset", default="imagenet") 
 parser.add_argument("--seed", type=int, default=123)                     # Random seed (an int)
 parser.add_argument("--epochs", type=int, default=100)
-parser.add_argument("--label_type", type=str, default="score")
+parser.add_argument("--label_type", type=str, default="score") # score/bins
+parser.add_argument("--bin_type", type=str, default="equal") # constant/equal
+parser.add_argument("--n_bins", type=int, default=10)
+parser.add_argument("--opt", type=str, default="sgd")
 args = parser.parse_args()
 seed = args.seed
 seed = args.seed
@@ -37,9 +40,11 @@ if dataset == "imagenet":
     root = "/workspace1/araymond/ILSVRC2012/train/"
 else:
     root = "."
+
+data_params = {'label_type': label_type, 'n_bins': args.n_bins, 'bin_type': args.bin_type}
 data = {"imagenet": ImagenetCScore,
-         "cifar10": CIFARIdx(CIFAR10,label_type=label_type),
-        "cifar100": CIFARIdx(CIFAR100, label_type=label_type)}
+         "cifar10": CIFARIdx(CIFAR10,**data_params),
+        "cifar100": CIFARIdx(CIFAR100, **data_params)}
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 preprocessing_tr = transforms.Compose([
@@ -65,7 +70,7 @@ n_classes = {'imagenet': 10, 'cifar10': 10, 'cifar100': 10} # regression task
 models = {'resnet18': resnet18, "resnet34": resnet34, "resnet50": resnet50} 
 optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
-optimizer = "sgd"  # "sgd", "adam"
+optimizer = args.opt
 device = 'cuda'
 criterion = MSELoss() if label_type == "score" else CrossEntropyLoss()
 
@@ -84,23 +89,19 @@ if label_type == "score":
     model.fc = nn.Linear(in_features[arch],1)
 else:
     model.fc = nn.Linear(in_features[arch],n_classes[dataset])
-'''model.fc.bias.requires_grad = False
-model.fc.bias.fill_(0.5)
-model.fc.bias.requires_grad = True'''
 
-n_gpus = 1
-if n_gpus > 1:
-    model = nn.DataParallel(model, list(range(n_gpus)))
+opt_params = {"lr": lr}
 
-opt = optimizers[optimizer](filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=0.9)
+if optimizer=="sgd":
+    opt_params['momentum'] = 0.9 
+
+opt = optimizers[optimizer](filter(lambda p: p.requires_grad, model.parameters()), **opt_params)
 
 train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
 test_dl = DataLoader(test_data, batch_size=512)
 
-if n_gpus > 1:
-    model.to(0)
-else:    
-    model.to(device)
+
+model.to(device)
 for epoch in range(1, n_epochs + 1):
     print(f"\nTrain Epoch {epoch}", flush=True)
     model, stats = train(args, model, train_dl, opt, device, criterion)
