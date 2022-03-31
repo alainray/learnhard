@@ -131,17 +131,17 @@ def create_splits(f, s, l, root="c_score/imagenet"):
 
 def checkpoint(args, model, stats, epoch, root="ckpts", res_root="stats", split="train"):
     
-    prefix = "_".join([k for k in args.keys() if "comet" not in k])
+    prefix = "_".join([w for k,w in args.items() if "comet" not in k])
     
     if split == "train":
         if not os.path.isdir(root):
             mkdir(root)
 
-        torch.save(model.state_dict(), f"{root}/{prefix}_{split}.pth")
+        torch.save(model.state_dict(), f"{root}/{prefix}_{split}_{epoch}.pth")
         
     if not os.path.isdir(res_root):
         mkdir(res_root)
-    torch.save(stats, f"{res_root}/{prefix}_{split}.pth")
+    torch.save(stats, f"{res_root}/{prefix}_{split}_{epoch}.pth")
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
