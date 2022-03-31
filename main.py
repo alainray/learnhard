@@ -111,7 +111,6 @@ exp.log_parameters({k:w for k,w in vars(args).items() if "comet" not in k})
 model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
 
 for epoch in range(1, n_epochs + 1):
-    print(f"\nTrain Epoch {epoch}", flush=True)
     model, stats = train(exp, args, model, train_dl, opt, device, criterion, epoch)
     checkpoint(exp, args, model, stats, epoch, split="train")
     # print(f"\nTest Epoch {epoch}", flush=True)

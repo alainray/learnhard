@@ -87,7 +87,7 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
         training_iteration = total_batches*(epoch-1) + n_batch + 1
         experiment.log_metrics(metrics, prefix='train', step=training_iteration, epoch=epoch)
 
-    print(f"\r{n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
+        print(f"\r[TRAIN] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
 
     return model, [loss_meter, acc_meter]
 
