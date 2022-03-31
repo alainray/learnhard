@@ -53,7 +53,7 @@ def timing(f):
         return result
     return wrap
 
-@timing
+#@timing
 def train(experiment, args, model, loader, opt, device, criterion, epoch):
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
