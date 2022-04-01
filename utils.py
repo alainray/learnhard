@@ -28,7 +28,7 @@ def setup_comet(args, resume_experiment_key=''):
     experiment = Experiment(api_key=api_key, parse_args=False, project_name=project_name,
                             workspace=workspace, disabled=disabled)
 
-    experiment_name = os.environ.get('EXP_NAME')
+    experiment_name = get_prefix(args)
     if experiment_name:
         experiment.set_name(experiment_name)
 
