@@ -10,6 +10,7 @@ def make_path(path):
     folder = path.split("_")[0]
     return join(folder, path)
 
+
 class ImagenetCScore(nn.Dataset):
     def __init__(self, root: str=".", 
                        train = True,
@@ -44,17 +45,38 @@ class ImagenetCScore(nn.Dataset):
         return index, img, score
 
 # CIFAR10
-
-def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
-    dataset = "cifar10" if cl == CIFAR10 else "cifar100"
+def get_bins(dataset, bin_type, n_bins):
     scores = np.load(f"c_score/{dataset}/scores.npy")
     if bin_type == "constant":
         bins = np.linspace(0,1,n_bins+1)
     else:
-        bins = histogram_bin_edges(scores, 10)
+        bins = histogram_bin_edges(scores, n_bins)
     delta = 0.00001
     bins[0] -= delta
     bins[-1] += delta
+    return bins
+
+def get_class_weights(dataset, bins):
+    scores = np.load(f"c_score/{dataset}/scores.npy")
+    len_dataset = scores.shape[0]
+    n_bins = bins.shape[0]-1
+    weights = [0.0 for i in range(n_bins)]
+    for index in range(len_dataset):
+        weights[digitize(scores[index],bins)-1]+=1
+    print(weights)
+    weights = np.array(weights)/len_dataset
+    weights = np.reciprocal(weights)
+    weights[weights==np.inf] = 0.0
+    max_weight = weights[weights>0.0].max()
+
+    return weights/max_weight
+
+def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
+
+    dataset = "cifar10" if cl == CIFAR10 else "cifar100"
+    scores = np.load(f"c_score/{dataset}/scores.npy")
+    bins = get_bins(dataset,bin_type=bin_type,n_bins=n_bins)
+
     class DatasetCIFARIdx(cl):
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
@@ -72,3 +94,9 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
             return index, img, label
 
     return DatasetCIFARIdx
+
+
+if __name__ == "__main__": 
+    bins = get_bins("cifar100", "constant", 10)
+    print(bins)
+    print(get_class_weights("cifar10",bins))
