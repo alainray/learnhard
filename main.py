@@ -76,7 +76,7 @@ input_dims = {'imagenet': 224*224*3}
 optimizer = args.opt
 device = 'cuda'
 bins = get_bins(dataset, args.bin_type, args.n_bins)
-criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=get_class_weights(dataset,bins))
+criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=torch.from_numpy(get_class_weights(dataset,bins)))
 
 pretrained = True
 freeze = False
