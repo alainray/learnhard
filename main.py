@@ -23,6 +23,7 @@ parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--label_type", type=str, default="score") # score/bins
 parser.add_argument("--bin_type", type=str, default="equal") # constant/equal
 parser.add_argument("--n_bins", type=int, default=10)
+parser.add_argument("--class_weighting", type=str, default="y")
 parser.add_argument("--opt", type=str, default="sgd")
 parser.add_argument("--cometKey", type=str)
 parser.add_argument("--cometWs", type=str)
@@ -76,7 +77,10 @@ input_dims = {'imagenet': 224*224*3}
 optimizer = args.opt
 device = 'cuda'
 bins = get_bins(dataset, args.bin_type, args.n_bins)
-class_weights = torch.from_numpy(get_class_weights(dataset,bins)).float().cuda()
+if args.class_weighting == "y":
+    class_weights = torch.from_numpy(get_class_weights(dataset,bins)).float().cuda()
+else:
+    class_weights = torch.ones(args.n_bins).float().cuda()
 criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=class_weights)
 
 pretrained = True
