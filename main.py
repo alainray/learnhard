@@ -91,7 +91,7 @@ if freeze:
 if label_type == "score":
     model.fc = nn.Linear(in_features[arch],1)
 else:
-    model.fc = nn.Linear(in_features[arch],n_classes[dataset])
+    model.fc = nn.Linear(in_features[arch],args.n_bins)
 
 opt_params = {"lr": lr}
 
