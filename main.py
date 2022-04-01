@@ -3,7 +3,7 @@ import torch
 from torchvision.models import resnet18, resnet34, resnet50
 from torchvision.datasets import CIFAR10, CIFAR100
 import torchvision.transforms as transforms
-from datasets import ImagenetCScore, CIFARIdx
+from datasets import ImagenetCScore, CIFARIdx, get_class_weights
 from utils import AverageMeter, checkpoint
 from torch.optim import SGD, Adam
 from torch.utils.data import DataLoader
@@ -75,7 +75,7 @@ optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = args.opt
 device = 'cuda'
-criterion = MSELoss() if label_type == "score" else CrossEntropyLoss()
+criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=get_class_weights(dataset,args.n_bins))
 
 pretrained = True
 freeze = False
