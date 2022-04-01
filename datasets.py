@@ -97,6 +97,6 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
 
 
 if __name__ == "__main__": 
-    bins = get_bins("cifar100", "constant", 10)
+    bins = get_bins("cifar100", "constant", 5)
     print(bins)
     print(get_class_weights("cifar10",bins))
