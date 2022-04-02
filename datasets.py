@@ -86,7 +86,7 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
             self.targets = [self.targets[index] for index in indices]
             # self.targets = self.targets[indices]
             nonlocal scores
-            scores = [scores[index] for index in indices]
+            self.scores = [scores[index] for index in indices]
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
 
@@ -99,7 +99,7 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
 
             if self.target_transform is not None:
                 target = self.target_transform(target)
-            label = scores[index] if label_type=="score" else (digitize(scores[index],bins) - 1).astype(np.longlong)
+            label = self.scores[index] if label_type=="score" else (digitize(self.scores[index],bins) - 1).astype(np.longlong)
             return index, img, label
 
     return DatasetCIFARIdx
