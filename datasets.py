@@ -85,6 +85,7 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
             #print(indices)
             self.targets = [self.targets[index] for index in indices]
             # self.targets = self.targets[indices]
+            nonlocal scores
             scores = [scores[index] for index in indices]
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
