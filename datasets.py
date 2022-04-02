@@ -102,7 +102,8 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
     return DatasetCIFARIdx
 
 
-if __name__ == "__main__": 
-    bins = get_bins("cifar100", "equal", 10)
-    print(bins)
-    print(get_class_weights("cifar10",bins))
+if __name__ == "__main__":
+    dataset = "cifar100"
+    split = "train" 
+    indices = np.load(f"c_score/{dataset}/indices_{split}.npy")
+    print(indices)
