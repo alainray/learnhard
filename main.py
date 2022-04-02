@@ -136,4 +136,4 @@ for epoch in range(1, n_epochs + 1):
     checkpoint(args, model, stats, epoch, split="test")
     if args.test_ds != "":
         model, stats = test(exp, args, model, test_dl2, device, criterion, epoch, prefix="test2")
-        checkpoint(args, model, stats, epoch, split=f"test_{args.test_set}")
+        checkpoint(args, model, stats, epoch, split=f"test_{args.test_ds}")
