@@ -140,16 +140,15 @@ def test(experiment, args, model, loader, device, criterion, epoch):
             loss_meter.update(cur_loss, bs)
             loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
             training_iteration = total_batches*(epoch-1) + n_batch + 1
-            experiment.log_metrics(metrics, prefix='train', step=training_iteration, epoch=epoch)
+            experiment.log_metrics(metrics, prefix='test', step=training_iteration, epoch=epoch)
 
             print(f"\r[TEST] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
     experiment.log_confusion_matrix(y_true,
                                     y_pred,
                                     step=epoch, 
                                     title=f"Confusion Matrix TEST, Epoch {epoch}",
-                                    file_name=f"cf_{get_prefix(args)}_test_{epoch}.json")
+                                    file_name=f"cf_{get_prefix(args)}_test_{epoch}_.json")
     return model, [loss_meter, acc_meter]
-    return model, [loss_meter]
 
 
 def create_splits(f, s, l, root="c_score/imagenet"):

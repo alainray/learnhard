@@ -13,11 +13,13 @@ import numpy as np
 import torch.nn as nn
 import argparse
 
+# Handling parameters to experiments
 parser = argparse.ArgumentParser()
 
 parser.add_argument("arch")                     # Architecture: fc, minialex
 parser.add_argument("lr", type=float)
-parser.add_argument("--dataset", default="imagenet") 
+parser.add_argument("--dataset", type="str", default="imagenet")
+parser.add_argument("--test_ds", type="str", default="") 
 parser.add_argument("--seed", type=int, default=123)                     # Random seed (an int)
 parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--label_type", type=str, default="score") # score/bins
@@ -30,15 +32,13 @@ parser.add_argument("--cometWs", type=str)
 parser.add_argument("--cometName", type=str)
 args = parser.parse_args()
 seed = args.seed
-seed = args.seed
 arch = args.arch
 lr = args.lr
 n_epochs = args.epochs
 label_type = args.label_type
 torch.manual_seed(seed)
 
-# dataset "MNIST", "CIFAR10"
-
+# Create datasets and dataloaders
 dataset = args.dataset
 if dataset == "imagenet":
     root = "/workspace1/araymond/ILSVRC2012/train/"
@@ -65,13 +65,21 @@ preprocessing_ts = transforms.Compose([
     transforms.ToTensor(),
     normalize,
 ])
+
+
 train_data = data[dataset](transform=preprocessing_tr, root=root, train=True, download=True)
-test_data = data[dataset](transform=preprocessing_ts, root=root, train=False, download=True)
+test_data = data[dataset](transform=preprocessing_ts, root=root, train=False if "cifar" not in dataset else True, download=True)
 
 if "cifar" in dataset:
     train_data.make_split("train")
     test_data.make_split("test")
+if args.test_ds != "":
+    test_data2 = data[dataset](transform=preprocessing_ts, root=root, train=False if "cifar" not in args.test_ds else True, download=True)
+    test_dl2 = DataLoader(test_data2, batch_size=512)
+train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
+test_dl = DataLoader(test_data, batch_size=512)
 
+# Define model parameters
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
 n_classes = {'imagenet': 10, 'cifar10': 10, 'cifar100': 10} # regression task
@@ -80,13 +88,6 @@ optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = args.opt
 device = 'cuda'
-bins = get_bins(dataset, args.bin_type, args.n_bins)
-if args.class_weighting == "y":
-    class_weights = torch.from_numpy(get_class_weights(dataset,bins)).float().cuda()
-else:
-    class_weights = torch.ones(args.n_bins).float().cuda()
-criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=class_weights)
-
 pretrained = True
 freeze = False
 model = models[arch](pretrained=pretrained)
@@ -103,6 +104,15 @@ if label_type == "score":
 else:
     model.fc = nn.Linear(in_features[arch],args.n_bins)
 
+# Define criterion
+bins = get_bins(dataset, args.bin_type, args.n_bins)
+if args.class_weighting == "y":
+    class_weights = torch.from_numpy(get_class_weights(dataset,bins)).float().cuda()
+else:
+    class_weights = torch.ones(args.n_bins).float().cuda()
+criterion = MSELoss() if label_type == "score" else CrossEntropyLoss(weight=class_weights)
+
+# Optimization
 opt_params = {"lr": lr}
 
 if optimizer=="sgd":
@@ -110,19 +120,19 @@ if optimizer=="sgd":
 
 opt = optimizers[optimizer](filter(lambda p: p.requires_grad, model.parameters()), **opt_params)
 
-train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
-test_dl = DataLoader(test_data, batch_size=512)
-
-
+# Training setup
 model.to(device)
-
+# Comet logging
 exp = setup_comet(args)
 exp.log_parameters({k:w for k,w in vars(args).items() if "comet" not in k})
 model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
 
+# Training
 for epoch in range(1, n_epochs + 1):
     model, stats = train(exp, args, model, train_dl, opt, device, criterion, epoch)
     checkpoint(args, model, stats, epoch, split="train")
-    # print(f"\nTest Epoch {epoch}", flush=True)
-    # model, stats = test(args, model, test_dl, device, criterion)
-    #checkpoint(args, model, stats, epoch, split="test")
+    model, stats = test(exp, args, model, test_dl, device, criterion, epoch)
+    checkpoint(args, model, stats, epoch, split="test")
+    if args.test_set != "":
+        model, stats = test(exp, args, model, test_dl2, device, criterion, epoch)
+        checkpoint(args, model, stats, epoch, split=f"test_{args.test_set}")
