@@ -104,7 +104,7 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
     return model, [loss_meter, acc_meter]
 
 @timing
-def test(experiment, args, model, loader, device, criterion, epoch):
+def test(experiment, args, model, loader, device, criterion, epoch, prefix="test"):
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -133,21 +133,20 @@ def test(experiment, args, model, loader, device, criterion, epoch):
                 acc_data = f"Acc: {100 * correct.float() / bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
                 metrics['acc'] = float(100*acc_meter.avg)
             loss = criterion(logits, label)
-            loss.backward()
             # Update stats
             cur_loss = loss.detach().cpu()
             metrics['loss'] = float(cur_loss)
             loss_meter.update(cur_loss, bs)
             loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
             training_iteration = total_batches*(epoch-1) + n_batch + 1
-            experiment.log_metrics(metrics, prefix='test', step=training_iteration, epoch=epoch)
+            experiment.log_metrics(metrics, prefix=prefix, step=training_iteration, epoch=epoch)
 
-            print(f"\r[TEST] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
+            print(f"\r[{prefix.upper()}] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
     experiment.log_confusion_matrix(y_true,
                                     y_pred,
                                     step=epoch, 
-                                    title=f"Confusion Matrix TEST, Epoch {epoch}",
-                                    file_name=f"cf_{get_prefix(args)}_test_{epoch}_.json")
+                                    title=f"Confusion Matrix {prefix.upper()}, Epoch {epoch}",
+                                    file_name=f"cf_{get_prefix(args)}_{prefix}_{epoch}_.json")
     return model, [loss_meter, acc_meter]
 
 
