@@ -130,10 +130,10 @@ model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
 
 # Training
 for epoch in range(1, n_epochs + 1):
-    '''model, stats = train(exp, args, model, train_dl, opt, device, criterion, epoch)
+    model, stats = train(exp, args, model, train_dl, opt, device, criterion, epoch)
     checkpoint(args, model, stats, epoch, split="train")
     model, stats = test(exp, args, model, test_dl, device, criterion, epoch)
-    checkpoint(args, model, stats, epoch, split="test")'''
+    checkpoint(args, model, stats, epoch, split="test")
     if args.test_ds != "":
         model, stats = test(exp, args, model, test_dl2, device, criterion, epoch, prefix="test2")
         checkpoint(args, model, stats, epoch, split=f"test_{args.test_set}")
