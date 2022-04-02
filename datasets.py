@@ -80,11 +80,13 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
         
         def make_split(self, split):
             indices = np.load(f"c_score/{dataset}/indices_{split}.npy")
-            self.data = self.data[indices]
-            print(indices)
-            self.targets = self.targets[indices]
+            self.data = [self.data[index] for index in indices]
+            #self.data = self.data[indices]
+            #print(indices)
+            self.targets = [self.targets[index] for index in indices]
+            # self.targets = self.targets[indices]
             self.scores = np.load(f"c_score/{dataset}/scores_{split}.npy")
-
+            self.scores = [self.scores[index] for index in indices]
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
 
