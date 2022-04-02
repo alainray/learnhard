@@ -75,6 +75,7 @@ if "cifar" in dataset:
     test_data.make_split("test")
 if args.test_ds != "":
     test_data2 = data[dataset](transform=preprocessing_ts, root=root, train=False if "cifar" not in args.test_ds else True, download=True)
+    test_data2.make_split("all")
     test_dl2 = DataLoader(test_data2, batch_size=512)
 train_dl = DataLoader(train_data, batch_size=256, shuffle=True)
 test_dl = DataLoader(test_data, batch_size=512)
