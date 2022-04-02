@@ -18,8 +18,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("arch")                     # Architecture: fc, minialex
 parser.add_argument("lr", type=float)
-parser.add_argument("--dataset", type="str", default="imagenet")
-parser.add_argument("--test_ds", type="str", default="") 
+parser.add_argument("--dataset", type=str, default="imagenet")
+parser.add_argument("--test_ds", type=str, default="") 
 parser.add_argument("--seed", type=int, default=123)                     # Random seed (an int)
 parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--label_type", type=str, default="score") # score/bins
