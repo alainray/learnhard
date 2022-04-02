@@ -98,27 +98,57 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
     experiment.log_confusion_matrix(y_true,
                                     y_pred,
                                     step=epoch, 
-                                    title=f"Confusion Matrix, Epoch {epoch}",
+                                    title=f"Confusion Matrix TRAIN, Epoch {epoch}",
                                     file_name=f"cf_{get_prefix(args)}_train_{epoch}.json")
+    
     return model, [loss_meter, acc_meter]
 
 @timing
-def test(args, model, loader, device, criterion):
+def test(experiment, args, model, loader, device, criterion, epoch):
+
     loss_meter = AverageMeter()
-    total_batches = len(loader)
+    acc_meter = AverageMeter()
     model.eval()
+    acc_data = ""
+    total_batches = len(loader)
+    metrics = {'loss': None, 'acc': None}
+    # confusion matrix
+    y_pred = []
+    y_true = []
     with torch.no_grad():
         for n_batch, (index, x, label) in enumerate(loader):
             x = x.to(device)
+            bs = x.shape[0]
             label = label.to(device)
             logits = model(x)
-            bs = x.shape[0]
+
+            if args.label_type == "score":
+                label = label.float().unsqueeze(1)
+            else:
+                preds = logits.argmax(dim=1)
+                y_pred.extend(preds.detach().cpu().numpy())
+                y_true.extend(label.detach().cpu().numpy())
+                correct = (preds == label).cpu().sum()
+                acc_meter.update(correct.cpu() / float(bs), bs)  
+                acc_data = f"Acc: {100 * correct.float() / bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
+                metrics['acc'] = float(100*acc_meter.avg)
             loss = criterion(logits, label)
+            loss.backward()
             # Update stats
-            loss_meter.update(loss.cpu(), bs)
+            cur_loss = loss.detach().cpu()
+            metrics['loss'] = float(cur_loss)
+            loss_meter.update(cur_loss, bs)
+            loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
+            training_iteration = total_batches*(epoch-1) + n_batch + 1
+            experiment.log_metrics(metrics, prefix='train', step=training_iteration, epoch=epoch)
 
-            print(f"\r {n_batch + 1}/{total_batches}: Loss (Current): {loss_meter.val:.3f} Cum. Loss: {loss_meter.avg:.3f}", end="", flush=True)
-
+            print(f"\r[TEST] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
+    experiment.log_confusion_matrix(y_true,
+                                    y_pred,
+                                    step=epoch, 
+                                    title=f"Confusion Matrix TEST, Epoch {epoch}",
+                                    file_name=f"cf_{get_prefix(args)}_test_{epoch}.json")
+    return model, [loss_meter, acc_meter]
     return model, [loss_meter]
 
 
@@ -175,8 +205,9 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 if __name__ == "__main__":
-    root = "c_score/imagenet"
-    filenames = np.load(join(root,"filenames.npy"), allow_pickle=True)
+    root = "c_score/cifar10"
+    #filenames = np.load(join(root,"scores.npy"), allow_pickle=True)
+    filenames = np.array(list(range(50000)))
     scores = np.load(join(root,"scores.npy"), allow_pickle=True)
     labels = np.load(join(root,"labels.npy"), allow_pickle=True)
-    create_splits(filenames, scores, labels)
+    create_splits(filenames, scores, labels, root=root)

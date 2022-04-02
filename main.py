@@ -68,6 +68,10 @@ preprocessing_ts = transforms.Compose([
 train_data = data[dataset](transform=preprocessing_tr, root=root, train=True, download=True)
 test_data = data[dataset](transform=preprocessing_ts, root=root, train=False, download=True)
 
+if "cifar" in dataset:
+    train_data.make_split("train")
+    test_data.make_split("test")
+
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048} 
 in_channels = {'imagenet': 3, "cifar10": 3, "cifar100": 3}
 n_classes = {'imagenet': 10, 'cifar10': 10, 'cifar100': 10} # regression task

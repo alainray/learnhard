@@ -74,10 +74,16 @@ def get_class_weights(dataset, bins):
 def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
 
     dataset = "cifar10" if cl == CIFAR10 else "cifar100"
-    scores = np.load(f"c_score/{dataset}/scores.npy")
     bins = get_bins(dataset,bin_type=bin_type,n_bins=n_bins)
 
     class DatasetCIFARIdx(cl):
+        
+        def make_split(self, split):
+            indices = np.load(f"c_score/{dataset}/indices_{split}.npy")
+            self.data = self.data[indices]
+            self.targets = self.targets[indices]
+            self.scores = np.load(f"c_score/{dataset}/scores_{split}.npy")
+
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
 
@@ -90,13 +96,13 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
 
             if self.target_transform is not None:
                 target = self.target_transform(target)
-            label = scores[index] if label_type=="score" else (digitize(scores[index],bins) - 1).astype(np.longlong)
+            label = self.scores[index] if label_type=="score" else (digitize(self.scores[index],bins) - 1).astype(np.longlong)
             return index, img, label
 
     return DatasetCIFARIdx
 
 
 if __name__ == "__main__": 
-    bins = get_bins("cifar100", "constant", 5)
+    bins = get_bins("cifar100", "equal", 10)
     print(bins)
     print(get_class_weights("cifar10",bins))
