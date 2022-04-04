@@ -27,6 +27,8 @@ parser.add_argument("--bin_type", type=str, default="equal") # constant/equal
 parser.add_argument("--n_bins", type=int, default=10)
 parser.add_argument("--class_weighting", type=str, default="y")
 parser.add_argument("--opt", type=str, default="sgd")
+parser.add_argument("--pretrained", type=int, default=1)
+parser.add_argument("--freeze", type=int, default=0)
 parser.add_argument("--cometKey", type=str)
 parser.add_argument("--cometWs", type=str)
 parser.add_argument("--cometName", type=str)
@@ -89,8 +91,9 @@ optimizers = {'adam': Adam, 'sgd': SGD}
 input_dims = {'imagenet': 224*224*3}
 optimizer = args.opt
 device = 'cuda'
-pretrained = True
-freeze = False
+
+pretrained = True if args.pretrained == 1 else False
+freeze = True if args.freeze == 1 else False
 model = models[arch](pretrained=pretrained)
 
 if freeze:
