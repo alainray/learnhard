@@ -30,5 +30,5 @@ for epoch in range(1, args.epochs + 1):
     model, stats = train(exp, args, model, train_dl, opt, criterion, epoch)
     checkpoint(args, model, stats, epoch, split="train")
     for i, test_dl in enumerate(test_dls):
-        model, stats = test(exp, args, model, test_dl, criterion, epoch)
+        model, stats = test(exp, args, model, test_dl, criterion, epoch, prefix=f"test{i+1}")
         checkpoint(args, model, stats, epoch, split=f"test{i+1}")
