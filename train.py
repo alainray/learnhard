@@ -115,11 +115,11 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         bs = x.shape[0]
         label = label.to(args.device)
         logits = model(x)
-        print(criterion)
         losses, accs = criterion(logits, label)
         acc_meter.update(accs['batch'] / float(bs), bs)  
         acc_data = f"Acc: {100 * float(accs['batch'])/ bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
         metrics['acc'] = float(100*acc_meter.avg)
+        print(losses['batch'])
         loss = losses['batch']
         loss.backward()
         # Update stats
