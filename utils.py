@@ -31,6 +31,8 @@ def get_args():
     parser.add_argument("--cometWs", type=str)
     parser.add_argument("--cometName", type=str)
     parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--train_bs", type=int, default=256)
+    parser.add_argument("--test_bs", type=int, default=512)
     return parser.parse_args()
 
 def set_random_state(args):
