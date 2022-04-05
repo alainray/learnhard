@@ -14,12 +14,12 @@ def get_dataloaders(args):
     else:
         root = "."
     data = get_datasets(args)
-    train_data = data[dataset](transform=preproc['train'][args.res], root=root, train=True, download=True)
-    test_data = data[dataset](transform=preproc['test'][args.res], 
+    train_data = data[args.dataset](transform=preproc['train'][args.res], root=root, train=True, download=True)
+    test_data = data[args.dataset](transform=preproc['test'][args.res], 
                             root=root, 
                             train=False if "cifar" not in dataset else True, 
                             download=True)
-    if "cifar" in dataset:
+    if "cifar" in args.dataset:
         train_data.make_split("train")
         test_data.make_split("test")
     if args.test_ds != "":
