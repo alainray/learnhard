@@ -152,7 +152,6 @@ def BPRLoss(logits, labels, n = None):
 
     sign_fix = torch.sign(comb_labels[:,0] - comb_labels[:,1])
     loss = s(-x*sign_fix)
-    print(loss)
     #print(ls(loss))
     loss, selected = loss.sort(descending=True)
     correct = (torch.sign(x) == sign_fix).detach().cpu()
