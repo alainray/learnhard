@@ -142,7 +142,6 @@ def BPRLoss(logits, labels, n = None):
     logits = logits.squeeze()
     labels = labels.squeeze()
     # Create all pairs between logits, then between all labels
-    #print(logits)
     comb_logits = torch.combinations(logits,2)
     comb_labels = torch.combinations(labels,2)
     
@@ -151,23 +150,25 @@ def BPRLoss(logits, labels, n = None):
         n = int(comb_logits.shape[0])
 
     sign_fix = torch.sign(comb_labels[:,0] - comb_labels[:,1])
-    loss = ls(-x*sign_fix)
+    loss = -x*sign_fix
     loss, selected = loss.sort(descending=True)
     correct = (torch.sign(x) == sign_fix).detach().cpu()
-
+    #loss = loss[loss>0]
+    #print(loss)
     losses['batch'] = loss.mean()
     losses['selected'] = loss[:n].mean()
     acc['batch'] = int(correct.sum())
     acc['selected'] = int(correct[selected[:n]].sum())
-    acc['nbatch'] = int(x.shape[0])
+    acc['nbatch'] = int(loss.numel())
     acc['nselected'] = int(n)
     return losses, acc
 
 if __name__ == "__main__":
     torch.manual_seed(123)
     bs = 10
-    a = torch.randn((bs,1)).float()
-    b = torch.randn((bs,1)).float()
+    scale = 1
+    a = scale*torch.randn((bs,1)).float()
+    b = scale*torch.randn((bs,1)).float()
 
     print(BPRLoss(a, b, n = 10))
 
