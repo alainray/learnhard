@@ -40,7 +40,7 @@ def get_dataloaders(args):
 def CIFARIdx(cl, args):
 
     dataset = "cifar10" if cl == CIFAR10 else "cifar100"
-    bins = get_bins(dataset,bin_type=args.bin_type,n_bins=args.n_bins)
+    bins = get_bins(args)
     scores = np.load(f"c_score/{dataset}/scores.npy")
     class DatasetCIFARIdx(cl):
         
