@@ -37,10 +37,10 @@ def get_dataloaders(args):
     
     return train_dl, [test_dl, test_dl2]
 
-def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
+def CIFARIdx(cl, args):
 
     dataset = "cifar10" if cl == CIFAR10 else "cifar100"
-    bins = get_bins(dataset,bin_type=bin_type,n_bins=n_bins)
+    bins = get_bins(dataset,bin_type=args.bin_type,n_bins=args.n_bins)
     scores = np.load(f"c_score/{dataset}/scores.npy")
     class DatasetCIFARIdx(cl):
         
@@ -72,8 +72,6 @@ def CIFARIdx(cl, label_type="score", bin_type="constant", n_bins=10):
             return index, img, label
 
     return DatasetCIFARIdx
-
-
 
 
 def make_path(path):
@@ -145,13 +143,10 @@ def get_class_weights(dataset, bins):
 Transforms and Data Parameters
 '''
 def get_datasets(args):
-    data_params = {'label_type': args.label_type,
-                   'n_bins': args.n_bins, 
-                   'bin_type': args.bin_type}
 
     data = {"imagenet": ImagenetCScore,
-            "cifar10": CIFARIdx(CIFAR10,**data_params),
-            "cifar100": CIFARIdx(CIFAR100, **data_params)}
+            "cifar10": CIFARIdx(CIFAR10,args),
+            "cifar100": CIFARIdx(CIFAR100, args)}
     return data
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
