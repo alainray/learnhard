@@ -9,7 +9,34 @@ from os.path import join
 from sklearn.model_selection import train_test_split
 from functools import wraps
 from time import time
+import argparse
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("arch")            # resnet18,34,50/simplecnn
+    parser.add_argument("lr", type=float)
+    parser.add_argument("--dataset", type=str, default="imagenet") # imagenet/cifar10/cifar100
+    parser.add_argument("--test_ds", type=str, default="") 
+    parser.add_argument("--seed", type=int, default=123)        # Random seed (an int)
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--res", type=int, default=224) # Input Img Resolution 224/32
+    parser.add_argument("--label_type", type=str, default="score")  # score/bins
+    parser.add_argument("--bin_type", type=str, default="equal")    # constant/equal
+    parser.add_argument("--n_bins", type=int, default=10)
+    parser.add_argument("--class_weighting", type=str, default="y")
+    parser.add_argument("--opt", type=str, default="sgd")
+    parser.add_argument("--pretrained", type=int, default=1)
+    parser.add_argument("--freeze", type=int, default=0)
+    parser.add_argument("--cometKey", type=str)
+    parser.add_argument("--cometWs", type=str)
+    parser.add_argument("--cometName", type=str)
+    parser.add_argument("--device", type="str", default="cuda")
+    return parser.parse_args()
+
+def set_random_state(args):
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    np.random.seed(args.seed)                          
 
 # Comet Experiments
 def setup_comet(args, resume_experiment_key=''):
@@ -43,7 +70,6 @@ def setup_comet(args, resume_experiment_key=''):
     return experiment
 
 
-
 def timing(f):
     @wraps(f)
     def wrap(*args, **kw):
@@ -55,7 +81,7 @@ def timing(f):
     return wrap
 
 @timing
-def train(experiment, args, model, loader, opt, device, criterion, epoch):
+def train(experiment, args, model, loader, opt, criterion, epoch):
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     model.train()
@@ -68,9 +94,9 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
 
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
-        x = x.to(device)
+        x = x.to(args.device)
         bs = x.shape[0]
-        label = label.to(device)
+        label = label.to(args.device)
         logits = model(x)
 
         if args.label_type == "score":
@@ -104,7 +130,7 @@ def train(experiment, args, model, loader, opt, device, criterion, epoch):
     return model, [loss_meter, acc_meter]
 
 @timing
-def test(experiment, args, model, loader, device, criterion, epoch, prefix="test"):
+def test(experiment, args, model, loader, criterion, epoch, prefix="test"):
 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
@@ -117,9 +143,9 @@ def test(experiment, args, model, loader, device, criterion, epoch, prefix="test
     y_true = []
     with torch.no_grad():
         for n_batch, (index, x, label) in enumerate(loader):
-            x = x.to(device)
+            x = x.to(args.device)
             bs = x.shape[0]
-            label = label.to(device)
+            label = label.to(args.device)
             logits = model(x)
 
             if args.label_type == "score":
