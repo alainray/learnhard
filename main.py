@@ -4,7 +4,7 @@ from models import get_model
 from datasets import get_dataloaders
 from utils import checkpoint, get_args
 from opt import get_opt, get_criterion
-from train import train, test, trainBPR
+from train import train, test, trainBPR, testBPR
 from utils import setup_comet, set_random_state
 
 # Handling parameters to experiments
@@ -34,7 +34,10 @@ for epoch in range(1, args.epochs + 1):
         model, stats = train(exp, args, model, train_dl, opt, criterion, epoch)
     checkpoint(args, model, stats, epoch, split="train")
 
-    if args.loss != "bpr":
-        for i, test_dl in enumerate(test_dls):
+
+    for i, test_dl in enumerate(test_dls):
+        if args.loss != "bpr":
             model, stats = test(exp, args, model, test_dl, criterion, epoch, prefix=f"test{i+1}")
-            checkpoint(args, model, stats, epoch, split=f"test{i+1}")
+        else:
+            model, stats = testBPR(exp, args, model, test_dl, criterion, epoch, prefix=f"test{i+1}")
+        checkpoint(args, model, stats, epoch, split=f"test{i+1}")

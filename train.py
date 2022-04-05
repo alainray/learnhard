@@ -111,7 +111,6 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
     for n_batch, (index, x, label) in enumerate(loader):
         opt.zero_grad()
         x = x.to(args.device)
-        bs = x.shape[0]
         label = label.to(args.device)
         logits = model(x)
         losses, accs = criterion(logits, label)
@@ -134,7 +133,37 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         print(f"\r[TRAIN] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
      
     return model, [loss_meter, acc_meter]
+@timing
+def testBPR(experiment, args, model, loader, opt, criterion, epoch, prefix="test"):
+    loss_meter = AverageMeter()
+    acc_meter = AverageMeter()
+    model.train()
+    acc_data = ""
+    total_batches = len(loader)
+    metrics = {'loss': None, 'acc': None}
+    with torch.no_grad():
+        for n_batch, (index, x, label) in enumerate(loader):
+            x = x.to(args.device)
+            label = label.to(args.device)
+            logits = model(x)
+            losses, accs = criterion(logits, label)
+            acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
+            acc_data = f"Acc: {100 * float(accs['batch'])/accs['nbatch']:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
+            acc_data += f"Correct: {accs['batch']} Total: {accs['nbatch']} Selected: {accs['nselected']}"
+            metrics['acc'] = float(100*acc_meter.avg)
 
+            loss = losses['batch']
+            # Update stats
+            cur_loss = loss.detach().cpu()
+            metrics['loss'] = float(cur_loss)
+            loss_meter.update(cur_loss, accs['nbatch'])
+            loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
+            training_iteration = total_batches*(epoch-1) + n_batch + 1
+            experiment.log_metrics(metrics, prefix=prefix, step=training_iteration, epoch=epoch)
+
+            print(f"\r[{prefix.upper()}] Epoch {epoch}: {n_batch + 1}/{total_batches}: {loss_data} {acc_data}", end="", flush=True)
+     
+    return model, [loss_meter, acc_meter]
 def BPRLoss(logits, labels, n = None):
     ls = LogSigmoid()
     s = Sigmoid()
