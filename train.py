@@ -118,7 +118,7 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         losses, accs = criterion(logits, label)
         acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
         acc_data = f"Acc: {100 * float(accs['batch'])/accs['nbatch']:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
-        acc_data += f"Correct: {accs['batch']} Total: {accs['nbatch']}"
+        acc_data += f"Correct: {accs['batch']} Total: {accs['nbatch']} Selected: {accs['nselected']}"
         metrics['acc'] = float(100*acc_meter.avg)
 
         loss = losses['batch']
@@ -152,8 +152,8 @@ def BPRLoss(logits, labels, n = None):
 
     sign_fix = torch.sign(comb_labels[:,0] - comb_labels[:,1])
     loss = -x*sign_fix
-    print(loss)
-    print(ls(loss))
+    #print(loss)
+    #print(ls(loss))
     loss, selected = loss.sort(descending=True)
     correct = (torch.sign(x) == sign_fix).detach().cpu()
 
@@ -164,6 +164,7 @@ def BPRLoss(logits, labels, n = None):
     correct = correct[loss>0]
     loss = loss[loss>0]
     losses['batch'] = loss.mean()
+    acc['nselected'] = int(loss.numel())
     return losses, acc
 
 if __name__ == "__main__":
