@@ -119,13 +119,14 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
         acc_data = f"Acc: {100 * float(accs['batch'])/accs['nbatch']:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
         metrics['acc'] = float(100*acc_meter.avg)
+
         loss = losses['batch']
         loss.backward()
         # Update stats
         opt.step()
         cur_loss = loss.detach().cpu()
         metrics['loss'] = float(cur_loss)
-        loss_meter.update(cur_loss, bs)
+        loss_meter.update(cur_loss, accs['nbatch'])
         loss_data = f" Loss (Current): {cur_loss:.3f} Cum. Loss: {loss_meter.avg:.3f}"
         training_iteration = total_batches*(epoch-1) + n_batch + 1
         experiment.log_metrics(metrics, prefix='train', step=training_iteration, epoch=epoch)
