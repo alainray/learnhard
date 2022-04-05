@@ -34,6 +34,7 @@ def get_args():
     parser.add_argument("--train_bs", type=int, default=256)
     parser.add_argument("--test_bs", type=int, default=512)
     parser.add_argument("--loss", type=str, default="")
+    parser.add_argument("--decay", type=float, default=0.0)
     return parser.parse_args()
 
 def set_random_state(args):
