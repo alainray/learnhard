@@ -7,7 +7,7 @@ def get_opt(args, model):
     optimizers = {'adam': Adam, 'sgd': SGD}
     optimizer = args.opt
 
-    opt_params = {"lr": args.lr, 'weight_decay': args.weight_decay}
+    opt_params = {"lr": args.lr, 'weight_decay': args.decay}
 
     if optimizer=="sgd":
         opt_params['momentum'] = 0.9
