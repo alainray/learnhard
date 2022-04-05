@@ -117,8 +117,9 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         logits = model(x)
         losses, accs = criterion(logits, label)
         acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
-        acc_data = f"Acc: {100 * float(accs['batch'])/ bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
+        acc_data = f"Acc: {100 * float(accs['batch'])/accs['nbatch']:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
         metrics['acc'] = float(100*acc_meter.avg)
+        print(losses)
         loss = losses['batch']
         loss.backward()
         # Update stats
@@ -141,7 +142,7 @@ def BPRLoss(logits, labels, n = None):
     logits = logits.squeeze()
     labels = labels.squeeze()
     # Create all pairs between logits, then between all labels
-    print(logits)
+    #print(logits)
     comb_logits = torch.combinations(logits,2)
     comb_labels = torch.combinations(labels,2)
     
