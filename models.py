@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from torchvision.models import resnet18, resnet34, resnet50
 
-def simplecnn():
+def simplecnn(**kwargs):
     return SimpleCNN([32,64,128],1,add_pooling=False)
 
 in_features = {'resnet18': 512, "resnet34": 512, "resnet50": 2048, "simplecnn": 1152} 
