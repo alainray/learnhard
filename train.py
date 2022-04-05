@@ -161,8 +161,8 @@ def BPRLoss(logits, labels, n = None):
     
     acc['batch'] = int(correct.sum())
     acc['nbatch'] = int(loss.numel())
-    loss = loss[loss>0]
     correct = correct[loss>0]
+    loss = loss[loss>0]
     losses['batch'] = loss.mean()
     return losses, acc
 
