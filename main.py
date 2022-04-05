@@ -28,7 +28,7 @@ model.comet_experiment_key = exp.get_key() # To retrieve existing experiment
 
 # Training
 for epoch in range(1, args.epochs + 1):
-    if args.method == "BPR":
+    if args.loss == "bpr":
         model, stats = trainBPR(exp, args, model, train_dl, opt, criterion, epoch)
     else:
         model, stats = train(exp, args, model, train_dl, opt, criterion, epoch)
