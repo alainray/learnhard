@@ -134,7 +134,7 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
      
     return model, [loss_meter, acc_meter]
 @timing
-def testBPR(experiment, args, model, loader, opt, criterion, epoch, prefix="test"):
+def testBPR(experiment, args, model, loader, criterion, epoch, prefix="test"):
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     model.train()
