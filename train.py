@@ -1,7 +1,6 @@
-from sklearn.datasets import load_sample_images
 import torch
 from utils import timing, AverageMeter, get_prefix
-from torch.nn import LogSigmoid
+from torch.nn import LogSigmoid, Sigmoid
 
 @timing
 def train(experiment, args, model, loader, opt, criterion, epoch):
@@ -138,12 +137,13 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
 
 def BPRLoss(logits, labels, n = None):
     ls = LogSigmoid()
+    s = Sigmoid()
     losses = {'batch': None, 'selected': None}
     acc = {'batch': None, 'selected': None}
     logits = logits.squeeze()
     labels = labels.squeeze()
     # Create all pairs between logits, then between all labels
-    comb_logits = torch.combinations(logits,2)
+    comb_logits = torch.combinations(s(logits),2)
     comb_labels = torch.combinations(labels,2)
     
     x = comb_logits[:,0] - comb_logits[:,1]
