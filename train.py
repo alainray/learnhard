@@ -116,10 +116,9 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         label = label.to(args.device)
         logits = model(x)
         losses, accs = criterion(logits, label)
-        acc_meter.update(accs['batch'] / float(bs), bs)  
+        acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
         acc_data = f"Acc: {100 * float(accs['batch'])/ bs:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
         metrics['acc'] = float(100*acc_meter.avg)
-        print(losses['batch'])
         loss = losses['batch']
         loss.backward()
         # Update stats
@@ -159,6 +158,8 @@ def BPRLoss(logits, labels, n = None):
     losses['selected'] = loss[:n].mean()
     acc['batch'] = int(correct.sum())
     acc['selected'] = int(correct[selected[:n]].sum())
+    acc['nbatch'] = int(x.shape[0])
+    acc['nselected'] = int(n)
     return losses, acc
 
 if __name__ == "__main__":
