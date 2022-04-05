@@ -153,6 +153,7 @@ def BPRLoss(logits, labels, n = None):
     loss = -x*sign_fix
     loss, selected = loss.sort(descending=True)
     correct = (torch.sign(x) == sign_fix).detach().cpu()
+    correct = correct[loss>0]
     loss = loss[loss>0]
     #print(loss)
     losses['batch'] = loss.mean()
