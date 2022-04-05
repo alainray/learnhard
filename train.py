@@ -118,6 +118,7 @@ def trainBPR(experiment, args, model, loader, opt, criterion, epoch):
         losses, accs = criterion(logits, label)
         acc_meter.update(accs['batch'] / float(accs['nbatch']), accs['nbatch'])  
         acc_data = f"Acc: {100 * float(accs['batch'])/accs['nbatch']:.1f}% Cum. Acc: {100 * acc_meter.avg:.1f}%"
+        acc_data += f"Correct: {accs['batch']} Total: {accs['nbatch']}"
         metrics['acc'] = float(100*acc_meter.avg)
 
         loss = losses['batch']
