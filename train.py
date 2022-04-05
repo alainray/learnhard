@@ -154,14 +154,13 @@ def BPRLoss(logits, labels, n = None):
     loss, selected = loss.sort(descending=True)
     correct = (torch.sign(x) == sign_fix).detach().cpu()
     correct = correct[loss>0]
-    loss = loss[loss>0]
+
     #print(loss)
-    losses['batch'] = loss.mean()
-    losses['selected'] = loss[:n].mean()
+    
     acc['batch'] = int(correct.sum())
-    acc['selected'] = int(correct[selected[:n]].sum())
     acc['nbatch'] = int(loss.numel())
-    acc['nselected'] = int(n)
+    loss = loss[loss>0]
+    losses['batch'] = loss.mean()
     return losses, acc
 
 if __name__ == "__main__":
