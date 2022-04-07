@@ -56,6 +56,11 @@ def CIFARIdx(cl, args):
                 self.scores = [scores[index] for index in indices]
             else:
                 self.scores = scores
+        def shuffle_dataset(self):
+
+            self.data = [self.data[i] for i in range(len(self))]
+            self.targets = [self.targets[i] for i in range(len(self))]
+            self.scores = [self.scores[i] for i in range(len(self))]
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
 
@@ -90,7 +95,7 @@ class ImagenetCScore(nn.Dataset):
         # Load scores list
         split = "train" if train else "test"
         self.transform = transform
-        self.files = np.load(join(root,f"filenames_{split}.npy"), allow_pickle=True)
+        self.files = np.load(join(img_root,f"filenames_{split}.npy"), allow_pickle=True)
         self.root = root
         
         for i in range(len(self.files)):
