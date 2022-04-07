@@ -22,6 +22,8 @@ def get_dataloaders(args):
     if "cifar" in args.dataset:
         train_data.make_split("train")
         test_data.make_split("test")
+    
+    test_data.shuffle_dataset()
     if args.test_ds != "":
         test_data2 = data[args.test_ds](transform=preproc['test'][args.res],
                                         root=root, 
@@ -29,7 +31,7 @@ def get_dataloaders(args):
                                         download=True)
         if "cifar" in args.test_ds:
             test_data2.make_split("all")
-    
+        test_data2.shuffle_dataset()
         test_dl2 = DataLoader(test_data2, batch_size=args.test_bs)
     
     train_dl = DataLoader(train_data, batch_size=args.train_bs, shuffle=True)
@@ -57,10 +59,10 @@ def CIFARIdx(cl, args):
             else:
                 self.scores = scores
         def shuffle_dataset(self):
-
-            self.data = [self.data[i] for i in range(len(self))]
-            self.targets = [self.targets[i] for i in range(len(self))]
-            self.scores = [self.scores[i] for i in range(len(self))]
+            random_indices = np.random.choice(len(self))
+            self.data = [self.data[i] for i in random_indices]
+            self.targets = [self.targets[i] for i in random_indices]
+            self.scores = [self.scores[i] for i in random_indices]
         def __getitem__(self, index: int) -> Tuple[Any, Any]:
             img, target = self.data[index], self.targets[index]
 
@@ -103,6 +105,12 @@ class ImagenetCScore(nn.Dataset):
         self.scores = np.load(join(img_root,f"scores_{split}.npy"))
     def __len__(self):
         return len(self.files)
+    
+    def shuffle_dataset(self):
+        random_indices = np.random.choice(len(self))
+        self.files = [self.files[i] for i in random_indices]
+        self.targets = [self.targets[i] for i in random_indices]
+        self.scores = [self.scores[i] for i in random_indices]
 
     def __getitem__(self, index):
         img = self.files[index]
