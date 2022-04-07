@@ -109,7 +109,6 @@ class ImagenetCScore(nn.Dataset):
     def shuffle_dataset(self):
         random_indices = np.random.choice(len(self.files),len(self.files))
         self.files = [self.files[i] for i in random_indices]
-        self.targets = [self.targets[i] for i in random_indices]
         self.scores = [self.scores[i] for i in random_indices]
 
     def __getitem__(self, index):
