@@ -59,7 +59,7 @@ def CIFARIdx(cl, args):
             else:
                 self.scores = scores
         def shuffle_dataset(self):
-            random_indices = np.random.choice(len(self))
+            random_indices = np.random.choice(len(self.data), len(self.data))
             self.data = [self.data[i] for i in random_indices]
             self.targets = [self.targets[i] for i in random_indices]
             self.scores = [self.scores[i] for i in random_indices]
@@ -107,7 +107,7 @@ class ImagenetCScore(nn.Dataset):
         return len(self.files)
     
     def shuffle_dataset(self):
-        random_indices = np.random.choice(len(self))
+        random_indices = np.random.choice(len(self.files),len(self.files))
         self.files = [self.files[i] for i in random_indices]
         self.targets = [self.targets[i] for i in random_indices]
         self.scores = [self.scores[i] for i in random_indices]
