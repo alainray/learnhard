@@ -34,8 +34,8 @@ def get_dataloaders(args):
         test_data2.shuffle_dataset()
         test_dl2 = DataLoader(test_data2, batch_size=args.test_bs)
     
-    train_dl = DataLoader(train_data, batch_size=args.train_bs, shuffle=True)
-    test_dl = DataLoader(test_data, batch_size=args.test_bs)
+    train_dl = DataLoader(train_data, batch_size=args.train_bs, shuffle=True, pin_memory=True, num_workers=args.workers)
+    test_dl = DataLoader(test_data, batch_size=args.test_bs, pin_memory=True, num_workers=args.workers)
     
     return train_dl, [test_dl, test_dl2]
 
@@ -172,7 +172,9 @@ preproc = { 'train':{224: transforms.Compose([
                                         normalize,
                                         ]),
                             32: transforms.Compose([
+                                        transforms.RandomCrop(32, padding=4),
                                         transforms.RandomHorizontalFlip(),
+                                        transforms.RandomRotation(15),
                                         transforms.ToTensor(),
                                         normalize,
                                         ])

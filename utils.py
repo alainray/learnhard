@@ -19,10 +19,12 @@ def get_args():
     parser.add_argument("--test_ds", type=str, default="") 
     parser.add_argument("--seed", type=int, default=123)        # Random seed (an int)
     parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--warm", type=int, default=1)
     parser.add_argument("--res", type=int, default=224) # Input Img Resolution 224/32
     parser.add_argument("--label_type", type=str, default="score")  # score/bins
     parser.add_argument("--bin_type", type=str, default="equal")    # constant/equal
     parser.add_argument("--n_bins", type=int, default=10)
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--class_weighting", type=str, default="y")
     parser.add_argument("--opt", type=str, default="sgd")
     parser.add_argument("--pretrained", type=int, default=1)
