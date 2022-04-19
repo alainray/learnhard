@@ -1,3 +1,7 @@
+# Pensar en análisis out of distribution generalization
+# Rol de la inicialización en resultados en subgrupos comunes
+# Como guiar el gradiente pensando en generalización y no training performance?
+
 import comet_ml
 import torch
 from models import get_model
